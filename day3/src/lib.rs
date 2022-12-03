@@ -11,7 +11,8 @@ fn priority(item: &char) -> usize {
 }
 
 pub fn part1(input: &Vec<&str>) -> usize {
-    input.iter()
+    input
+        .iter()
         .map(|rucksack| {
             let compartments = rucksack.split_at(rucksack.len() / 2);
             let left: HashSet<char> = compartments.0.chars().collect();

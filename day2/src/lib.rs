@@ -86,15 +86,15 @@ impl Match {
             return MatchResult::Draw;
         }
 
-        if (a == &Shape::Rock && b == &Shape::Scissors) ||
-            (a == &Shape::Paper && b == &Shape::Rock) ||
-            (a == &Shape::Scissors && b == &Shape::Paper) {
+        if (a == &Shape::Rock && b == &Shape::Scissors)
+            || (a == &Shape::Paper && b == &Shape::Rock)
+            || (a == &Shape::Scissors && b == &Shape::Paper)
+        {
             return MatchResult::Win;
         }
 
         return MatchResult::Loss;
     }
-
 
     fn my_score(&self) -> usize {
         self.my_shape.score() + Match::compare(&self.my_shape, &self.opponent_shape).score()
@@ -121,10 +121,8 @@ pub fn part2(input: &Vec<&str>) -> usize {
         .map(|line| {
             let mut split = line.split(' ');
             let opponent_shape: Shape = split.next().unwrap().parse().unwrap();
-            let my_shape: Shape = Shape::for_match_result(
-                &opponent_shape,
-                split.next().unwrap().parse().unwrap(),
-            );
+            let my_shape: Shape =
+                Shape::for_match_result(&opponent_shape, split.next().unwrap().parse().unwrap());
 
             Match {
                 opponent_shape,
