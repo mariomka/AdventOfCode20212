@@ -2,7 +2,7 @@
 name = "day1"
 version = "0.1.0"
 authors = ["Mario Juarez <mario@mjp.one>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 helpers = { path = "../helpers" }
