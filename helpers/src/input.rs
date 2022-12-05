@@ -1,7 +1,8 @@
-use crate::Grid;
 use std::fmt::Debug;
 use std::iter::FromIterator;
 use std::str::FromStr;
+
+use crate::Grid;
 
 pub fn input_lines<'a, R>(input: &'a str) -> R
 where
@@ -12,6 +13,12 @@ where
         .map(|line| line.trim())
         .filter(|line| false == line.is_empty())
         .collect()
+}
+pub fn input_lines_raw<'a, R>(input: &'a str) -> R
+where
+    R: FromIterator<&'a str>,
+{
+    input.lines().collect()
 }
 
 pub fn split_input<'a, R>(input: &'a str, pattern: &str) -> R
@@ -110,6 +117,31 @@ mod tests {
             .iter()
             .cloned()
             .collect();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_input_lines_raw() {
+        let input = "
+            1-3 a: abcde
+            1-3 b: cdefg
+
+            2-9 c: ccccccccc
+        ";
+
+        let result: Vec<&str> = input_lines_raw(input);
+
+        let expected: Vec<&str> = [
+            "",
+            "            1-3 a: abcde",
+            "            1-3 b: cdefg",
+            "",
+            "            2-9 c: ccccccccc",
+            "        ",
+        ]
+        .iter()
+        .cloned()
+        .collect();
         assert_eq!(result, expected);
     }
 
