@@ -36,7 +36,7 @@ impl<T> Grid<T> {
         Some(&self.cells[self.index((coord.0 as usize, coord.1 as usize))])
     }
 
-    pub fn get_mut<'a>(&'a mut self, coord: Coord) -> &'a mut T {
+    pub fn get_mut(&mut self, coord: Coord) -> &mut T {
         let index = self.index(coord);
         self.cells.get_mut(index).unwrap()
     }

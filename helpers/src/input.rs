@@ -32,7 +32,7 @@ where
         .collect()
 }
 
-pub fn input_grid<'a, R>(input: &'a str) -> Grid<R>
+pub fn input_grid<R>(input: &str) -> Grid<R>
 where
     R: FromStr + Clone,
     <R as FromStr>::Err: Debug,
