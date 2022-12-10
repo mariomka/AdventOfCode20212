@@ -1,89 +1,110 @@
-pub fn part1(input: &Vec<&str>) -> isize {
-    let mut register_x: isize = 1;
-    let mut index: usize = 0;
-    let mut cycle: usize = 1;
-    let mut current_instruction = "";
-    let mut signal_strength = 0;
+#[derive(Clone)]
+struct DeviceVideoSystemState {
+    register_x: isize,
+    cycle: usize,
+}
 
-    loop {
-        if [20, 60, 100, 140, 180, 220].contains(&cycle) {
-            signal_strength += cycle as isize * register_x;
+struct DeviceVideoSystem<'a> {
+    state: DeviceVideoSystemState,
+    instruction_pointer: usize,
+    current_instruction: String,
+    program: &'a Vec<&'a str>,
+}
+
+impl<'a> DeviceVideoSystem<'a> {
+    fn init(program: &'a Vec<&'a str>) -> Self {
+        Self {
+            state: DeviceVideoSystemState {
+                register_x: 1,
+                cycle: 1,
+            },
+            instruction_pointer: 0,
+            current_instruction: String::new(),
+            program,
         }
-
-        if cycle == 220 || input.len() == index {
-            break;
-        }
-
-        if !current_instruction.is_empty() {
-            let (_, increment) = current_instruction.split_once(" ").unwrap();
-            register_x += increment.parse::<isize>().unwrap();
-            current_instruction = "";
-
-            cycle += 1;
-            continue;
-        }
-
-        let instruction = input[index];
-        index += 1;
-
-        if instruction == "noop" {
-            cycle += 1;
-            continue;
-        }
-
-        current_instruction = instruction;
-        cycle += 1;
     }
 
-    signal_strength
+    fn run(&'a mut self) -> RunIterator {
+        RunIterator { device: self }
+    }
+
+    fn run_next_instruction(&mut self) -> bool {
+        if !self.current_instruction.is_empty() {
+            let (_, increment) = self.current_instruction.split_once(" ").unwrap();
+            self.state.register_x += increment.parse::<isize>().unwrap();
+            self.current_instruction = String::new();
+            self.state.cycle += 1;
+
+            return true;
+        }
+
+        if self.instruction_pointer >= self.program.len() {
+            return false;
+        }
+
+        let instruction = self.program[self.instruction_pointer];
+        self.instruction_pointer += 1;
+
+        if instruction == "noop" {
+            self.state.cycle += 1;
+            return true;
+        }
+
+        self.current_instruction = instruction.to_string();
+        self.state.cycle += 1;
+
+        true
+    }
+}
+
+struct RunIterator<'a> {
+    device: &'a mut DeviceVideoSystem<'a>,
+}
+
+impl<'a> Iterator for RunIterator<'a> {
+    type Item = DeviceVideoSystemState;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let state = self.device.state.clone();
+
+        if !self.device.run_next_instruction() {
+            return None;
+        }
+
+        return Some(state);
+    }
+}
+
+pub fn part1(input: &Vec<&str>) -> isize {
+    DeviceVideoSystem::init(input)
+        .run()
+        .filter(|state| [20, 60, 100, 140, 180, 220].contains(&state.cycle))
+        .map(|state| state.cycle as isize * state.register_x)
+        .sum()
 }
 
 pub fn part2(input: &Vec<&str>) -> String {
-    let mut register_x: isize = 1;
-    let mut index: usize = 0;
-    let mut cycle: usize = 1;
-    let mut current_instruction = "";
-    let mut crt_pixels = "".to_string();
+    DeviceVideoSystem::init(input)
+        .run()
+        .map(|state| {
+            let mut string = String::new();
+            let pixel_x = ((state.cycle - 1) % 40) as usize;
 
-    loop {
-        if input.len() == index {
-            break;
-        }
+            if state.cycle > 1 && pixel_x == 0 {
+                string += "\n";
+            }
 
-        let pixel_x = ((cycle - 1) % 40) as usize;
+            let sprite_range = state.register_x - 1..=state.register_x + 1;
 
-        if cycle > 1 && pixel_x == 0 {
-            crt_pixels += "\n";
-        }
+            string += if sprite_range.contains(&(pixel_x as isize)) {
+                "#"
+            } else {
+                "."
+            };
 
-        crt_pixels += if (register_x - 1..=register_x + 1).contains(&(pixel_x as isize)) {
-            "#"
-        } else {
-            "."
-        };
-
-        if !current_instruction.is_empty() {
-            let (_, increment) = current_instruction.split_once(" ").unwrap();
-            register_x += increment.parse::<isize>().unwrap();
-            current_instruction = "";
-
-            cycle += 1;
-            continue;
-        }
-
-        let instruction = input[index];
-        index += 1;
-
-        if instruction == "noop" {
-            cycle += 1;
-            continue;
-        }
-
-        current_instruction = instruction;
-        cycle += 1;
-    }
-
-    crt_pixels
+            string
+        })
+        .collect()
 }
 
 #[cfg(test)]
