@@ -146,20 +146,18 @@ where
     for _ in 0..rounds {
         for i in 0..monkeys.len() {
             let monkey = monkeys.get_mut(i).unwrap();
-            let items = monkey.items.clone();
-            let operation = monkey.operation.clone();
-            let test = monkey.test.clone();
+            let current_monkey = monkey.clone();
             monkey.items = vec![];
 
-            for item in items.iter() {
+            for item in current_monkey.items.iter() {
                 inspection_count[i] += 1;
 
-                let new_item = reducer(operation.execute(*item));
+                let new_item = reducer(current_monkey.operation.execute(*item));
 
-                let other_monkey = if new_item % test.divisible_by == 0 {
-                    monkeys.get_mut(test.if_true).unwrap()
+                let other_monkey = if new_item % current_monkey.test.divisible_by == 0 {
+                    monkeys.get_mut(current_monkey.test.if_true).unwrap()
                 } else {
-                    monkeys.get_mut(test.if_false).unwrap()
+                    monkeys.get_mut(current_monkey.test.if_false).unwrap()
                 };
 
                 other_monkey.items.push(new_item);
