@@ -1,0 +1,9 @@
+[package]
+name = "day11"
+version = "0.1.0"
+authors = ["Mario Juarez <mario@mjp.one>"]
+edition = "2021"
+
+[dependencies]
+helpers = { path = "../helpers" }
+num-bigint = "0.4.3"
