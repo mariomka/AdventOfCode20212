@@ -44,9 +44,9 @@ impl Operation for Multiply {
 }
 
 #[derive(Clone)]
-struct MultiplyOld {}
+struct Square {}
 
-impl Operation for MultiplyOld {
+impl Operation for Square {
     fn execute(&self, old: usize) -> usize {
         old * old
     }
@@ -76,7 +76,7 @@ impl Clone for Monkey {
 }
 
 fn parse_monkeys(input: &Vec<&str>) -> Vec<Monkey> {
-    let mut monkeys: Vec<Monkey> = vec![];
+    let mut monkeys = vec![];
     let mut input_iter = input.iter();
 
     while let Some(mut line) = input_iter.next() {
@@ -92,7 +92,7 @@ fn parse_monkeys(input: &Vec<&str>) -> Vec<Monkey> {
             .collect::<Vec<&str>>();
 
         let operation = if operation_split[1] == "old" {
-            Box::new(MultiplyOld {})
+            Box::new(Square {})
         } else {
             let operation_value = operation_split[1].parse::<usize>().unwrap();
             match operation_split[0] {
@@ -137,32 +137,33 @@ fn parse_monkeys(input: &Vec<&str>) -> Vec<Monkey> {
     monkeys
 }
 
-fn calc_monkey_business<F>(monkeys: Vec<Monkey>, rounds: usize, reducer: F) -> usize
+fn calc_monkey_business<F>(monkeys: &mut Vec<Monkey>, rounds: usize, reducer: F) -> usize
 where
     F: Fn(usize) -> usize,
 {
     let mut inspection_count = vec![0; monkeys.len()];
 
-    let mut current_monkeys = monkeys.clone();
     for _ in 0..rounds {
-        for i in 0..current_monkeys.len() {
-            let mut next_monkeys = current_monkeys.clone();
-            let monkey = current_monkeys.get(i).unwrap();
+        for i in 0..monkeys.len() {
+            let monkey = monkeys.get_mut(i).unwrap();
+            let items = monkey.items.clone();
+            let operation = monkey.operation.clone();
+            let test = monkey.test.clone();
+            monkey.items = vec![];
 
-            for item in monkey.items.iter() {
+            for item in items.iter() {
                 inspection_count[i] += 1;
 
-                let new_item = reducer(monkey.operation.execute(*item));
+                let new_item = reducer(operation.execute(*item));
 
-                if new_item % monkey.test.divisible_by == 0 {
-                    next_monkeys[monkey.test.if_true].items.push(new_item);
+                let other_monkey = if new_item % test.divisible_by == 0 {
+                    monkeys.get_mut(test.if_true).unwrap()
                 } else {
-                    next_monkeys[monkey.test.if_false].items.push(new_item);
-                }
-            }
+                    monkeys.get_mut(test.if_false).unwrap()
+                };
 
-            next_monkeys[i].items = vec![];
-            current_monkeys = next_monkeys;
+                other_monkey.items.push(new_item);
+            }
         }
     }
 
@@ -171,19 +172,19 @@ where
 }
 
 pub fn part1(input: &Vec<&str>) -> usize {
-    let monkeys = parse_monkeys(input);
+    let mut monkeys = parse_monkeys(input);
 
-    calc_monkey_business(monkeys, 20, |value| value / 3)
+    calc_monkey_business(&mut monkeys, 20, |value| value / 3)
 }
 
 pub fn part2(input: &Vec<&str>) -> usize {
-    let monkeys = parse_monkeys(input);
+    let mut monkeys = parse_monkeys(input);
     let common_multiple: usize = monkeys
         .iter()
         .map(|monkey| monkey.test.divisible_by)
         .product();
 
-    calc_monkey_business(monkeys, 10_000, |value| value % common_multiple)
+    calc_monkey_business(&mut monkeys, 10_000, |value| value % common_multiple)
 }
 
 #[cfg(test)]
